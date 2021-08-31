@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<title>Resultados</title>
+</head>
+<body>
+	<br><br><img loading="lazy" src="js/U.png" alt="" title="Meso" height="auto" width="auto" class="wp-image-12773">
+	<img loading="lazy" src="js/diag.png" alt="" title="RCP" height="auto" width="auto" class="wp-image-12773"><br>
+	<h2>Acontinuacion se muestran detalles de la evaluación realizada</h2>
+	<h3>Las compresiones que se realizaron de manera incorecta son <span id="Incorrectas">%IC%</span></h3>
+	<h3>Las compresiones que se realizaron de manera corecta son <span id="Correctas">%C%</span></h3>
+	<h3>Se realizaron <span id="Resp">%Res%</span> respiraciones</h3>
+	<h3>Respiraciones requeridas <span id="Resp_Nes">%Res_r%</span></h3>
+	<h3><div id="Verif"></div></h3>
+	<a href="index.html"><button type="button" class="button button"> Regresar</button></a>
+	
+	<script type="text/javascript">
+		var temp_s;
+		var temp1_s;
+		var temp2_s;
+		var temp3_s;
+		var temp4_s;
+		var temp;
+		var temp1;
+		var temp2;
+		var temp3;
+		var temp4;
+		var led_Stat = 0;
+		var Comp_1;
+		var time_set_function1=false;
+		var state_button=false;
+		var Puls_State_ritm=-1;
+		var cont_ritm=0;
+		var flag_ritm=false;
+
+
+		function sendData1() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+				if (this.readyState == 4 && this.status == 200) {
+                temp1_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp1 = Number(temp1_s);
+                if (isNaN(temp1)) {
+                	temp1 = 0;
+                }
+                document.getElementById("Correctas").innerHTML = temp1_s;
+            }
+        };
+        xhttp.open("GET", "/getADC5", true);
+        xhttp.send();
+    }
+
+    function sendData2() {
+    	var xhttp = new XMLHttpRequest();
+    	xhttp.onreadystatechange = function(){
+    		if (this.readyState == 4 && this.status == 200) {
+                temp2_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp2 = Number(temp2_s);
+                if (isNaN(temp2)) {
+                	temp2 = 0;
+                }
+                document.getElementById("Incorrectas").innerHTML = temp2_s;
+            }
+        };
+        xhttp.open("GET", "/getADC4", true);
+        xhttp.send();
+    }
+
+    function sendData3() {
+    	var xhttp = new XMLHttpRequest();
+    	xhttp.onreadystatechange = function(){
+    		if (this.readyState == 4 && this.status == 200) {
+                temp3_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp3 = Number(temp3_s);
+                if (isNaN(temp3)) {
+                	temp3 = 0;
+                }
+                document.getElementById("Resp").innerHTML = temp3;
+            }
+        };
+        xhttp.open("GET", "/getADC", true);
+        xhttp.send();
+    }
+
+    function sendData4() {
+    	var xhttp = new XMLHttpRequest();
+    	xhttp.onreadystatechange = function(){
+    		if (this.readyState == 4 && this.status == 200) {
+                temp4_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp4 = Number(temp4_s);
+                if (isNaN(temp4)) {
+                	temp4 = 0;
+                }
+                document.getElementById("Resp_Nes").innerHTML = temp4*2;
+            }
+        };
+        xhttp.open("GET", "/getADC6", true);
+        xhttp.send();
+    }
+    function verificacion(){
+    	if(temp4*2 == temp3){
+    		document.getElementById('Verif').innerHTML='Se cumplieron con las Respiraciones correctamente';
+    	}else{
+    		document.getElementById('Verif').innerHTML='no se realizaron las respiraciones correctamente se necesitan ' + temp4*2 + ' y se realizaron ' + temp3;
+    	}
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    	window.setInterval(sendData1, 200);
+    	window.setInterval(sendData2, 200);
+    	window.setInterval(sendData3, 200);
+    	window.setInterval(sendData4, 200);
+    	window.setInterval(verificacion, 205);
+    	/*sendData1();
+    	sendData2();
+    	sendData3();
+    	sendData4();
+    	verificacion();*/
+        //window.setInterval(updateData, duration);
+    });
+</script>
+</body>
+</html>

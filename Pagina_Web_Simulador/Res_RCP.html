@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="js/d3.v4.min.js"></script>
+  <script src="js/script.js"></script>
+  <link  rel="icon"   href="js/bitmap.png" type="image/png" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Evaluación RCP</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  
+  <div style="width: 1000px; margin: 0 auto 0 auto;">
+    <ul id="navigation">
+      <li class="one" ><a href="index.html">Inicio</a></li>
+      <li class="two"><a href="SimulacionRCP.html">Práctica</a></li>
+      <li class="three"><a href="Res_RCP.html">Evaluación</a></li>
+      <li class="four"><a href="Contacto.html">Contactos</a></li>
+    </ul>
+    <h2>Evaluación</h2>
+
+  </head>
+  <body>
+    <br><div id="chart"></div><br>
+
+    <h2><span id="cpm_n">%C% </span> Compresiones por minuto | <span id="compres">%Comp% </span> Compresiones | <span id="Resp">%Resp% </span> Respiraciones</h2><br>
+    <input class="input" type="text" placeholder="No. Ciclos" id="Compresiones_In">
+    <button class="button button" type="button" name="btnConvertir" onclick="sendData1()">Ciclos</button>
+    <button class="button button" type="button" onclick="SetTimerFunc()"><span id="InitState">Iniciar</span></button>
+    <br><h3><div id="Verif"></div></h3>
+    <h3>la evaluacion se completara a los <span id="CiclosState">no asignado</span> ciclos</h3><br>
+    <!--<button class="button button" type="button" onclick="sendData(1)"><span id="LEDState">Iniciar</span></button>-->
+    <script type="text/javascript">
+      document.getElementById("cpm_n").innerHTML = 0;
+      document.getElementById("compres").innerHTML = 0;
+      document.getElementById("Resp").innerHTML = 0;
+      var Pulsos_lat = [20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,18,20,25,15,20,20,21,20,20,22,20,20,17,30,13,20,24,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20];
+
+      var temp_s;
+      var temp1_s;
+      var temp2_s;
+      var temp3_s;
+      var temp;
+      var temp1;
+      var temp2;
+      var temp3;
+      var led_Stat = 0;
+      var Comp_1;
+      var time_set_function1=false;
+      var state_button=false;
+      var Puls_State_ritm=-1;
+      var cont_ritm=0;
+      var flag_ritm=false;
+      //Graph Var
+      var lineArr = [];
+      var MAX_LENGTH = 200;
+      var duration = 100;
+      var chart = realTimeLineChart();
+
+      
+      function randomNumberBounds(min, max) {
+        return Math.floor(Math.random() * max) + min;
+      }
+
+      function sendData1() {
+        Comp_1 = document.getElementById('Compresiones_In').value;
+        Comp_1=Number(Comp_1);
+        if(Comp_1 == '' || Comp_1 > 3) {
+          Comp_1 = 0;
+          document.getElementById('Verif').innerHTML='Ingrese los valores correctamente';
+        }else{
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              Puls_State_ritm=Number(this.responseText);
+              document.getElementById("CiclosState").innerHTML = Puls_State_ritm;
+              state_button=true;
+            }
+          };
+          xhttp.open("GET", "SetCiclos?CiclosState="+Number(Comp_1), true);
+          xhttp.send();
+          document.getElementById('Verif').innerHTML='';
+        }
+        document.getElementById('Compresiones_In').value = ''
+      }
+
+      function SetTimerFunc(){
+        if(time_set_function1==false && state_button==true){
+          time_set_function1=true;
+          document.getElementById("InitState").innerHTML ="Reiniciar";
+        }
+        else{
+          time_set_function1=false;
+          location.href = "Res_RCP.html"
+        }
+        
+      }
+
+      setInterval(function ( ) {
+        if(time_set_function1==true){
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                temp_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp = Number(temp_s);
+                if(temp<0){
+                  temp = 0;
+                }
+                document.getElementById("Resp").innerHTML = temp;
+              }
+            };
+            xhttp.open("GET", "/getADC", true);
+            xhttp.send();
+          }
+        },10);
+
+      setInterval(function ( ) {
+        if(time_set_function1==true){
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                temp1_s = this.responseText; //charg document.getElementById("charg").innerHTML cpm_n
+                temp1 = Number(temp1_s);
+                if(temp1<0){
+                  temp1 = 0;
+                }
+                document.getElementById("cpm_n").innerHTML = temp1;
+              }
+            };
+            xhttp.open("GET", "/getADC1", true);
+            xhttp.send();
+          }
+        },10);
+
+      setInterval(function ( ) {
+        if(time_set_function1==true){
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200) {
+                temp2_s = this.responseText; //charg document.getElementById("charg").innerHTML
+                temp2 = Number(temp2_s);
+                if(temp2<0){
+                  temp2 = 0;
+                }
+                if(temp2 >= Puls_State_ritm*30 && temp2 <= (Puls_State_ritm*30)+2 && temp == Puls_State_ritm*2){
+                  time_set_function1=false;
+                  flag_ritm = true;
+                  Puls_State_ritm=-1;
+                  document.getElementById("InitState").innerHTML ="Terminado";
+                }
+                document.getElementById("compres").innerHTML = temp2;
+              }
+            };
+            xhttp.open("GET", "/getADC2", true);
+            xhttp.send();
+          }
+        },5);
+      
+      setInterval(function ( ) {
+        if(flag_ritm==true){
+          time_set_function1=false;
+          temp3 = Pulsos_lat[cont_ritm]
+          cont_ritm = cont_ritm+1;
+          if(cont_ritm==100){
+            cont_ritm=0;
+            Puls_State_ritm=-1;
+            flag_ritm=false;
+            location.href = "ResultadosEvaluacion.html"
+          }
+        }
+        else{
+          cont_ritm=0;
+          temp3=20;
+        }
+    },200);
+
+      function seedData() {
+        var now = new Date();
+        for (var i = 0; i < MAX_LENGTH; ++i) {
+          lineArr.push({
+            time: new Date(now.getTime() - ((MAX_LENGTH - i) * duration)),
+            //Compresiones: 0,
+            //Respiraciones: 20,
+            Ritmo_Cardiaco: 40
+          });
+        }
+      }
+
+      function updateData() {
+        if (isNaN(temp3)) {
+          temp3 = 0;
+        }
+        var now = new Date();
+        var lineData = {
+          time: now,
+          Ritmo_Cardiaco: temp3*4-40
+        };
+        lineArr.push(lineData);
+
+        if (lineArr.length > 30) {
+          lineArr.shift();
+        }
+        d3.select("#chart").datum(lineArr).call(chart);
+      }
+
+      function resize() {
+        if (d3.select("#chart svg").empty()) {
+          return;
+        }
+        chart.width(+d3.select("#chart").style("width").replace(/(px)/g, ""));
+        d3.select("#chart").call(chart);
+      }
+
+      document.addEventListener("DOMContentLoaded", function() {
+        seedData();
+        window.setInterval(updateData, duration);
+        d3.select("#chart").datum(lineArr).call(chart);
+        d3.select(window).on('resize', resize);
+      });
+    </script>
+  </body>
+  <h5>Leonardo Carrillo, Antonio Lázaro, Héctor Yax, Emanuel Jiguan, Jordi Rodas</h5>
+  </html>
